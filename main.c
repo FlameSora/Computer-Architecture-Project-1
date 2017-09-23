@@ -14,7 +14,9 @@ int main(int argc, char* argv[]){
 		printf("%s",argv[i]);
 
 	}
+
 	printf("fucking c");
+
 		
 	file = fopen("example1.s","r");
 
@@ -34,7 +36,6 @@ int main(int argc, char* argv[]){
 		fclose(file);
 	}	
 
-	}
 	printf("Hello World! \n");
 	return 0;
 }
