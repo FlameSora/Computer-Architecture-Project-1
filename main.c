@@ -3,32 +3,28 @@
 
 int main(int argc, char* argv[]){
 	
-	int i;
+	int i=0;
 	FILE *file;
-	char c;	
+	char c;
+		
 	printf("%d\n",argc);
 
 	for( i; i<argc ;i++){
 		printf("%s",argv[1]);
 
 	}
-		
-	file = fopen(argv[1],"r");
+//	new_str = strcat("./Project1_examples/example1.s")
+	printf("%c",argv[1][1]);	
+	file = fopen("./Project1_examples/example1.s","r");
 	if(file){
 		printf("in \n");
 		while ((c = fgetc(file))!=EOF){
 			printf("%c",c);
-			putchar(c);
+		//	putchar(c);
 		}
 		fclose(file);
 
 	}
-/*	if(file){
-		while((c = getc(file))!=EOF)
-			putchar(c);
-		fclose(file);
-	}
-*/		
 	printf("Hello World! \n");
 	return 0;
 }
