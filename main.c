@@ -3,17 +3,22 @@
 
 int main(int argc, char* argv[]){
 	
-	int i;
+	int i = 0;
 	FILE *file;
 	char c;	
 	printf("%d\n",argc);
 
 	for( i; i<argc ;i++){
-		printf("%s",argv[1]);
+		printf("%s",argv[i]);
 
 	}
 		
-	file = fopen(argv[1],"r");
+	file = fopen("example1.s","r");
+
+	if(file == NULL) {
+		printf("error");
+	}
+
 	if(file){
 		printf("in \n");
 		while ((c = fgetc(file))!=EOF){
@@ -22,13 +27,8 @@ int main(int argc, char* argv[]){
 		}
 		fclose(file);
 
-	}
-/*	if(file){
-		while((c = getc(file))!=EOF)
-			putchar(c);
-		fclose(file);
-	}
-*/		
+	}	
+
 	printf("Hello World! \n");
 	return 0;
 }
