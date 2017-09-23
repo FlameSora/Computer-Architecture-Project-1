@@ -1,5 +1,5 @@
 #include<stdio.h>
-
+#include<string.h>
 
 int main(int argc, char* argv[]){
 	
@@ -8,7 +8,10 @@ int main(int argc, char* argv[]){
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read; 
-//	char * pch;		
+	char * pch;
+	int j=0;	
+	char buf[1000];
+	char *array[5];
 	printf("%d\n",argc);
 
 	for( i; i<argc ;i++){
@@ -19,27 +22,25 @@ int main(int argc, char* argv[]){
 	file = fopen("example1.s","r");
 
 	if(file == NULL) {
-		printf("error");
-	}
-
-//	new_str = strcat("./Project1_examples/example1.s")
-	printf("%c",argv[1][1]);	
-	file = fopen("./Project1_examples/example1.s","r");
+		printf("cannot read the file");
+	}	
+	file = fopen(argv[1],"r");
 	if(file){
-		printf("in \n");
-		while ((read = getline(&line, &len,file))!=-1){
-		//	printf("len is: %zu \n ",len);
-			printf("Retrieved line of length %zu :\n",read);
-			printf("%s",line);
-		//	pch = strtok(line," ");
-		//	printf("%s", pch);
-		//	putchar(c);
+		while((read = getline(&line, &len,file))!=-1){
+	//	while(!feof(file)){
+		//	fgets(buf,1000,file);
+			puts(line);
+			pch = strtok(line,"\t ");
+			printf("%s\n",pch);
+			pch = strtok(NULL,"\t ");	
+			while(pch!=NULL){
+				printf("%s\n",pch);
+				pch = strtok(NULL,"\t ");
+			}
 		}
 		fclose(file);
-	}	
-//	if (line)
-//		free(line);
-
+	}
+	
 	printf("Hello World! \n");
 	return 0;
 }
