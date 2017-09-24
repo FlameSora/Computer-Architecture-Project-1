@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
 	char *output;
 
 	// functions
-	char *lineToBinary(char *line);
+	char *lineToBinary(char *line[4]);
 
 	file = fopen(argv[1],"r");
 	if(file){
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]){
 				}
 			}
 			else {
-				char *input[10];
+				char *input[4];
 				int input_idx = 0;
 				char *name;
 
@@ -268,7 +268,7 @@ char * makeJType(char *op, char*jTarget){
 		}
 }
 		
-char * lineToBinary(char *data){
+char * lineToBinary(char *data[4]){
 	printf("in function\n");
 	printf("%s\n",data[1]);	
 	char *Binary=malloc(32);;
