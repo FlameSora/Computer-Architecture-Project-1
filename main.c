@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<string.h>
+#include<stdlib.h>
 
 int main(int argc, char* argv[]){
 	
@@ -11,7 +12,7 @@ int main(int argc, char* argv[]){
 	char *pch;	
 	char *data[10];
 	int dataidx = 0;
-	char *array[5];
+//	char *array[5];
 	int num_data=-1;
 	int num_text=0;
 	int checker=0;
@@ -59,11 +60,12 @@ int main(int argc, char* argv[]){
 				if (!strncmp(pch, ".word", 4)) {
 					printf("I came in\n");
 					pch = strtok(NULL,"\n\t ,");
-					data[dataidx] = pch;
+					data[dataidx] = (char *)malloc(32);
+					strcpy(data[dataidx],pch);
 					printf("1: %d\n", dataidx);
 					printf("2: %s\n", data[dataidx]);
 					printf("3: %s\n", pch);
-					dataidx++; 
+					dataidx++;
 				}
 				else {
 				pch = strtok(NULL,"\n\t ,");
@@ -73,11 +75,9 @@ int main(int argc, char* argv[]){
 		fclose(file);
 	}
 	
-	int idx = 0;
-	while (idx<4) {
-		printf("%s\n", data[idx]);
-		idx++;
-	}
+	printf("%s\n", data[0]);
+	printf("%s\n", data[1]);
+	printf("%s\n", data[2]);
 	
 	printf("%d\n",deciTobin(num_data*4));
 	printf("%d\n", deciTobin(num_text*4));	
