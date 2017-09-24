@@ -3,29 +3,29 @@
 
 int main(int argc, char* argv[]){
 	
-	int i=0;
+//	int i=0;
 	FILE *file;
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read; 
-	char * pch;
-	int j=0;	
-	char buf[1000];
+	char *pch;	
+	char *data[10];
+	int dataidx = 0;
 	char *array[5];
 	int num_data=-1;
+	int num_text=0;
 	int checker=0;
-	printf("%d\n",argc);
+//	printf("%d\n",argc);
 
-	for( i; i<argc ;i++){
-		printf("%s",argv[i]);
-
-	}
+//	for( i; i<argc ;i++){
+//		printf("%s",argv[i]);
+//	}
 	
 	file = fopen("example1.s","r");
 
-	if(file == NULL) {
-		printf("cannot read the file");
-	}	
+//	if(file == NULL) {
+//		printf("cannot read the file");
+//	}	
 	file = fopen(argv[1],"r");
 	if(file){
 		while((read = getline(&line, &len,file))!=-1){
@@ -49,16 +49,38 @@ int main(int argc, char* argv[]){
 			if(checker ==1){
 				num_data = num_data +1;	
 			}
-			pch = strtok(NULL,"\t ");	
+			pch = strtok(NULL,"\n\t ,");
+
+			if (checker == 0 && pch != NULL) {
+				num_text = num_text + 1;
+			}	
 			while(pch!=NULL){
 				
-				printf("%s\n",pch);
-				pch = strtok(NULL,"\t ");
+				if (!strncmp(pch, ".word", 4)) {
+					printf("I came in\n");
+					pch = strtok(NULL,"\n\t ,");
+					data[dataidx] = pch;
+					printf("1: %d\n", dataidx);
+					printf("2: %s\n", data[dataidx]);
+					printf("3: %s\n", pch);
+					dataidx++; 
+				}
+				else {
+				pch = strtok(NULL,"\n\t ,");
+				}
 			}
 		}
 		fclose(file);
 	}
-	printf("%d\n",deciTobin(num_data*4));	
+	
+	int idx = 0;
+	while (idx<4) {
+		printf("%s\n", data[idx]);
+		idx++;
+	}
+	
+	printf("%d\n",deciTobin(num_data*4));
+	printf("%d\n", deciTobin(num_text*4));	
 	printf("Hello World! \n");
 	return 0;
 }
@@ -75,7 +97,3 @@ int deciTobin(int deci){
 	}
 	return binary;
 }
-
-
-
-
