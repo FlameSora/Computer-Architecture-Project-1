@@ -4,96 +4,111 @@
 
 int main(int argc, char* argv[]){
 	
-//	int i=0;
 	FILE *file;
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read; 
-	char *pch;	
-	char *data[10];
+	char *pch;
+	char *data_name[10];	
+	char *data_value[10];
 	int dataidx = 0;
-//	char *array[5];
+	char *proc_name[10];
+	int proc_token[10];
+	int proc_idx = 0;
 	int num_data=-1;
 	int num_text=0;
 	int checker=0;
-//	printf("%d\n",argc);
 
-//	for( i; i<argc ;i++){
-//		printf("%s",argv[i]);
-//	}
-	
-	file = fopen("example1.s","r");
-
-//	if(file == NULL) {
-//		printf("cannot read the file");
-//	}	
 	file = fopen(argv[1],"r");
 	if(file){
 		while((read = getline(&line, &len,file))!=-1){
-//	while(!feof(file)){
-		//	fgets(buf,1000,file);
-			printf("line is: %s",line);
-			pch = strtok(line,"\t ");
-			printf("%s\n",pch);
-		//	for (i = 0; i<strlen(pch);i++){
-		//		printf("%d is : %c\n",i,pch[i]);
-		//	}
-		//	printf("pch length is: %zu\n",strlen(pch));
-			printf("strcmp value is: %d\n",strcmp(pch,".data\n"));
-			printf("strcmp value with text is: %d\n", strcmp(pch,".text\n"));
-			if(strcmp(pch, ".data\n")==0){
-				checker= 1;
+			if (!strcmp(line, "\t.data\n")) {
+				checker = 1;
 			}
-			if(strcmp(pch, ".text\n")==0){
+			if (!strcmp(line, "\t.text\n")) {
 				checker = 0;
 			}
-			if(checker ==1){
-				num_data = num_data +1;	
+			int i = 0;
+			for (i; i < 10; i++) {
+				if (proc_token[i] >= 0) {
+					proc_token[i]++;
+				}
 			}
-			pch = strtok(NULL,"\n\t ,");
-
-			if (checker == 0 && pch != NULL) {
-				num_text = num_text + 1;
-			}	
-			while(pch!=NULL){
-				
-				if (!strncmp(pch, ".word", 4)) {
-					printf("I came in\n");
-					pch = strtok(NULL,"\n\t ,");
-					data[dataidx] = (char *)malloc(32);
-					strcpy(data[dataidx],pch);
-					printf("1: %d\n", dataidx);
-					printf("2: %s\n", data[dataidx]);
-					printf("3: %s\n", pch);
-					dataidx++;
+			if(checker ==1){
+				pch = strtok(line, "\n\t ,:");
+				num_data = num_data +1;
+				char *empty = "Empty";
+				if (!strcmp(pch, ".word")) {
+					data_name[dataidx] = (char *)malloc(6);
+					strcpy(data_name[dataidx], empty);
+				}
+				while(pch!=NULL) {
+					if (!strncmp(pch, "array", 5) || !strncmp(pch, "data", 4)) {
+						data_name[dataidx] = (char *)malloc(6);
+						strcpy(data_name[dataidx],pch);
+						printf("%s :", data_name[dataidx]);
+						pch = strtok(NULL, "\n\t ,:");
+					}
+					if (!strcmp(pch, ".word")) {
+						pch = strtok(NULL, "\n\t ,:");
+						data_value[dataidx] = (char *)malloc(32);
+						strcpy(data_value[dataidx],pch);
+						printf("%s\n", data_value[dataidx]);
+						dataidx++;
+					}
+					else {
+						pch = strtok(NULL,"\n\t ,:");
+					}
+				}
+			}
+			else {
+				char *input[4];
+				int input_idx = 0;
+				char *name;
+				pch = strtok(line, "\n\t ,:");
+				name = pch;
+				input[input_idx] = (char *)malloc(32);
+				strcpy(input[input_idx], pch);
+				printf("%s\n", input[input_idx]);
+				input_idx++;
+				pch = strtok(NULL, "\n\t ,:");
+				if (pch == NULL) {
+					proc_name[proc_idx] = (char *)malloc(10);
+					strcpy(proc_name[proc_idx], name);
+					proc_token[proc_idx] = 0;
+					proc_idx++;
 				}
 				else {
-				pch = strtok(NULL,"\n\t ,");
+					while (pch != NULL) {
+						input[input_idx] = (char *)malloc(32);
+						strcpy(input[input_idx], pch);
+						printf("%s\n", input[input_idx]);
+						input_idx++;
+						pch = strtok(NULL, "\n\t ,:");
+					}
+					num_text++;
 				}
 			}
 		}
 		fclose(file);
 	}
-	
-	printf("%s\n", data[0]);
-	printf("%s\n", data[1]);
-	printf("%s\n", data[2]);
-	
-	printf("%d\n",deciTobin(num_data*4));
-	printf("%d\n", deciTobin(num_text*4));	
-	printf("Hello World! \n");
-	return 0;
-}
-
-int deciTobin(int deci){
-	int binary=0;
-	int counter=1;
-	int remainder;
-	while (deci!=0){
-		remainder = deci%2;
-		deci = deci/2;
-		binary = binary + (remainder*counter);
-		counter = counter*10;
+	int idx = 0;
+	while (idx < dataidx) {
+		if (strcmp(data_name[idx], "Empty")) { 
+			printf("%s is:\n", data_name[idx]);
+		}
+		printf("%s\n", data_value[idx]);
+		idx++;
 	}
-	return binary;
+
+	int idx1 = 0;
+	while (idx1 < proc_idx) {
+		printf("%s :", proc_name[idx1]);
+		printf("%d\n", proc_token[idx1]);
+		idx1++;
+	}
+	
+//	printf("%d\n",deciTobin(num_data*4));
+//	printf("%d\n", deciTobin(num_text*4));
+	return 0;
 }
