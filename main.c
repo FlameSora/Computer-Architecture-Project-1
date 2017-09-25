@@ -19,11 +19,10 @@ int main(int argc, char* argv[]){
 	int num_data=-1;
 	int num_text=0;
 	int checker=-2;
-	int current_pos = 0;
 	char *output;
 
 	// functions
-	char *lineToBinary(char *line[4]);
+	char *lineToBinary(char *line[4],char* data_name[10], char*data_value[10], char *proc_name[10], int proc_token[10], int rel_addr);
 	char *data_addr(char *data_list[10], const char *data, int high);
 	char *hextoBin(char *number, int length);
 	char *decitobin(int number, int length);
@@ -132,24 +131,25 @@ int main(int argc, char* argv[]){
 							strcpy(new_input[0], "lui");
 							strcpy(new_input[1], input[1]);
 							strcpy(new_input[2], data_addr(data_name, input[2], 1));
-							lineToBinary(new_input);
+							lineToBinary(new_input,data_name,data_value,proc_name,proc_token, rel_addr);
 							
 							strcpy(new_input[0], "ori");
 							strcpy(new_input[1], input[1]);
 							strcpy(new_input[2], input[1]);
 							strcpy(new_input[3], data_addr(data_name, input[2], 0));
-							lineToBinary(new_input);
+							
 							rel_addr++;
+							lineToBinary(new_input,data_name,data_value,proc_name,proc_token, rel_addr);
 						}
 						else {
 							strcpy(new_input[0], "lui");
 							strcpy(new_input[1], input[1]);
 							strcpy(new_input[2], data_addr(data_name, input[2], 1));
-							lineToBinary(new_input);
+							lineToBinary(new_input,data_name,data_value,proc_name,proc_token, rel_addr);
 						}
 					}
 					else {
-						lineToBinary(input);
+						lineToBinary(input,data_name,data_value,proc_name,proc_token, rel_addr);
 					}
 				rel_addr++;
 				}
@@ -177,9 +177,6 @@ int main(int argc, char* argv[]){
 	}
 	printf("num_data is: %d\n", num_data);
 	printf("num_text is: %d\n", num_text);
-
-	printf("%s\n", decitobin(17, 10));
-	printf("%s\n", decitobin(-9, 5));
 
 	return 0;
 }
@@ -277,18 +274,12 @@ int deciTobin(int deci) {
 }
 // Length of binary number
 int biLengthCal(int a){
-	if(a==0)
-		return 0;
-	else if(a <10)
-		return 1;
-	else if(a<100)
-		return 2;
-	else if(a<1000)
-		return 3;
-	else if(a<10000)
-		return 4;
-	else if(a<100000)
-		return 5;
+	int counter =0;
+	while (a!=0){
+		a =a/10;
+		counter ++;
+	}
+	return counter;
 }
 
 char *data_addr(char *data_name[10], const char *data, int high) {
@@ -358,7 +349,7 @@ char * hextoBin(char* hex, int length){
 
 
 
-char * makeRType(char *op, int rd, int rs, int rt, char* hex){
+char * makeRType(char *op, int rd, int rs, int rt,int shamt, char* hex){
 		char *Binary = malloc(32);
 		int deciTobin(int deci);
 		int length;
@@ -396,7 +387,12 @@ char * makeRType(char *op, int rd, int rs, int rt, char* hex){
 			}
 		}
 		for(i=21;i<26;i++){
-			Binary[i] = '0';
+			sprintf(str,"%d",deciTobin(shamt));
+			length = biLengthCal(deciTobin(shamt));
+			if((25 - i - (5-length))>=0){
+				Binary[i+(5-length)] = str[i-21];
+			}
+			
 		}
 		for(i=26; i<32;i++){
 			Binary[i] = hex[i-26];
@@ -436,10 +432,11 @@ char * makeIType(char *op, int rt, int rs, char * imm){
 		for(i=16;i<32;i++){
 			Binary[i] = imm[i-16];
 		}
+		return Binary;
 }
 		
 
-char * makeJType(char *op, char*jTarget){
+char * makeJType(char *op, char *jTarget){
 		char *Binary = malloc(32);
 		int deciTobin(int deci);
 		int i;
@@ -453,71 +450,142 @@ char * makeJType(char *op, char*jTarget){
 		for(i = 6;i<32;i++){
 			Binary[i] = jTarget[i-6];
 		}
+		return Binary;
 }
 		
-char * lineToBinary(char *data[4]){
+char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* proc_name[10],int proc_token[10],int rel_addr ){
 	
-	char *Binary=malloc(32);;
+	char *Binary=malloc(32);
 	int j;
 	for(j =0;j<32;j++){
 		Binary[j] = '0';
 	}
+	char *targetBin = malloc(26);
+ 	for(j=0;j<26;j++){
+		if(j == 5){
+			targetBin[j] = '1';
+		}
+		else{
+			targetBin[j] = '0';
+		}
+	}
 	int index = 0;
 	int i;
-	char str[5];
 	int deciTobin(int deci);
 	int length; 
+	int counter = 0;
+	int target;
 
 	if(strcmp(data[0],"addiu")==0){
-		printf("addiu in\n");
-		printf("testing: %c\n",Binary[3]);
+		printf("what is o: %c\n",data[3][0]);
+//		if(strlen(data[3])>2 & data[3][1] =='x'){
+//			char str[strlen(data[3]-2)];
+//			strncpy(str, data[3]+2,strlen(data[3])-2);
+//			printf("str is %s\n", str);
+//		}	
+	//	Binary = makeIType("001001",atoi(data[2]),atoi(data[1]),);
+		
 	}
 	else if(strcmp(data[0],"addu")==0){
+		Binary = makeRType("000000", atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100000");
 	}
 	
 	else if(strcmp(data[0],"and")==0){
-		Binary = makeRType("000000",17,17,5,"999999");
-	//	printf("testing hextobin 2b: %s\n",hexto6bin("2b"));			
+		
+		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100100");	
 	
 	}
-/*
 	else if(strcmp(data[0],"andi")==0){
+	
 	}
 	else if(strcmp(data[0],"beq")==0){
+	
 	}
  
 	else if(strcmp(data[0],"bne")==0){
+	
 	}
 	else if(strcmp(data[0],"j")==0){
-	}
-	else if(strcmp(data[0],"jal")==0){
+		for( i = 0; i<10;i ++){
+			if(strcmp(proc_name[i],data[1])==0){
+				counter = i;
+				break;
+			}
+		}
+		target = proc_token[counter]*4;
+		target = deciTobin(target)/100;
+		length = biLengthCal(target);
+		char str[length];
+		sprintf(str, "%d",target);
+		for(i = 0; i<length; i++){
+			targetBin[25 - length +1 +i] = str[i];
+		}
+		Binary = makeJType("000010",targetBin);
+
+	}	
+	else if(strcmp(data[0],"jal")==0){	
+		for( i = 0; i<10;i ++){
+			if(strcmp(proc_name[i],data[1])==0){
+				counter = i;
+				break;
+			}
+		}
+		target = proc_token[counter]*4;
+		target = deciTobin(target)/100;
+		length = biLengthCal(target);
+		char str[length];
+		sprintf(str, "%d",target);
+		for(i = 0; i<length; i++){
+			targetBin[25 - length +1 +i] = str[i];
+		}
+		Binary = makeJType("000011",targetBin);
+
 	}
 	else if(strcmp(data[0],"jr")==0){
+	
+		Binary = makeRType("000000",0,atoi(data[1]),0,0,"001000");	
+	
 	}
 	else if(strcmp(data[0],"lui")==0){
+	
 	}
 	else if(strcmp(data[0],"lw")==0){
+	
 	}
 	else if(strcmp(data[0],"la")==0){
+	
 	}
 	else if(strcmp(data[0],"nor")==0){
+		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100111");	
+	
+	
 	}
 	else if(strcmp(data[0],"or")==0){
+		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100101");	
 	}
 	else if(strcmp(data[0],"ori")==0){
+	
 	}
 	else if(strcmp(data[0],"sltiu")==0){
+	
 	}
 	else if(strcmp(data[0],"sltu")==0){
+	
 	}
 	else if(strcmp(data[0],"sll")==0){
+		Binary = makeRType("000000",atoi(data[1]),0,atoi(data[2]),atoi(data[3]),"000000");
 	}
 	else if(strcmp(data[0],"srl")==0){
+		
+		Binary = makeRType("000000",atoi(data[1]),0,atoi(data[2]),atoi(data[3]),"000010");
 	}
 	else if(strcmp(data[0],"sw")==0){
+	
 	}
 	else if(strcmp(data[0],"subu")==0){
-	}*/
+		
+		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100011");
+	}
 	printf("binary is %s\n",Binary);
 	return Binary;
 }
