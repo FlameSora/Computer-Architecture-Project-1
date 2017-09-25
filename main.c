@@ -106,7 +106,7 @@ int main(int argc, char* argv[]){
 				input[input_idx] = (char *)malloc(32);
 				strcpy(input[input_idx], pch);
 				input_idx++;
-				pch = strtok(NULL, "\n\t ,$:");
+				pch = strtok(NULL, "\n\t ,$():");
 				
 				if (pch != NULL) {
 					while(pch != NULL) {
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]){
 						input[input_idx] = (char *)malloc(32);
 						strcpy(input[input_idx], pch);
 						input_idx++;
-						pch = strtok(NULL, "\n\t ,$:");
+						pch = strtok(NULL, "\n\t ,$():");
 					}
 					if (!strcmp(input[0], "la")) {
 						char *new_input[4];
@@ -248,11 +248,11 @@ char *decitobin(int deci, int length) {
 		}
 		init_value[0] = '1';
 		printf("%s\n", init_value);
-		for (i = 0; i < length - (bin_length + 2); i++) {
+		for (i = 0; i < length - init_length; i++) {
 			binary_str[i] = '1';
 		}
-		for (i = 0; i < bin_length + 2; i++) {
-			binary_str[length - (bin_length + 2)] = init_value[i];
+		for (i = 0; i < init_length; i++) {
+			binary_str[length - init_length + i] = init_value[i];
 		}
 	}
 	return binary_str;
@@ -398,7 +398,6 @@ char * makeRType(char *op, int rd, int rs, int rt,int shamt, char* hex){
 			Binary[i] = hex[i-26];
 		}
 		return Binary;
-
 }
 
 char * makeIType(char *op, int rt, int rs, char * imm){
@@ -471,11 +470,14 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	}
 	int index = 0;
 	int i;
+	char *hextoBin(char *hex, int length);
+	char *decitobin(int deci, int length);
 	int deciTobin(int deci);
 	int length; 
 	int counter = 0;
 	int target;
 
+	// takes negative numbers
 	if(strcmp(data[0],"addiu")==0){
 		printf("what is o: %c\n",data[3][0]);
 //		if(strlen(data[3])>2 & data[3][1] =='x'){
@@ -498,12 +500,27 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	else if(strcmp(data[0],"andi")==0){
 	
 	}
+	// takes negative values
 	else if(strcmp(data[0],"beq")==0){
-	
+		for (i = 0; i < 10; i++) {
+			if (strcmp(proc_name[i], data[3]) == 0) {
+				counter = i;
+				break;
+			}
+		}
+		char *offset = decitobin(proc_token[counter] - (rel_addr + 1), 16);
+		Binary = makeIType("000100", atoi(data[2]), atoi(data[1]), offset);
 	}
- 
+ 	// takes negative values
 	else if(strcmp(data[0],"bne")==0){
-	
+		for (i = 0; i < 10; i++) {
+			if(strcmp(proc_name[i],data[3]) == 0) {
+				counter = i;
+				break;
+			}
+		}
+		char *offset = decitobin(proc_token[counter] - (rel_addr + 1), 16);
+		Binary = makeIType("000101", atoi(data[2]), atoi(data[1]), offset);
 	}
 	else if(strcmp(data[0],"j")==0){
 		for( i = 0; i<10;i ++){
@@ -542,23 +559,27 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 
 	}
 	else if(strcmp(data[0],"jr")==0){
-	
-		Binary = makeRType("000000",0,atoi(data[1]),0,0,"001000");	
-	
+		Binary = makeRType("000000",0,atoi(data[1]),0,0,"001000");		
 	}
 	else if(strcmp(data[0],"lui")==0){
 	
 	}
+	// takes negative values
 	else if(strcmp(data[0],"lw")==0){
-	
+		char *imme;
+		if (strlen(data[2]) > 3 && data[2][1] == 'x') {
+			imme = hextoBin(data[2], 16);
+		}
+		else {
+			imme = decitobin(atoi(data[2]), 16);
+		}
+		Binary = makeIType("100011", atoi(data[1]), atoi(data[3]), imme);
 	}
 	else if(strcmp(data[0],"la")==0){
 	
 	}
 	else if(strcmp(data[0],"nor")==0){
 		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100111");	
-	
-	
 	}
 	else if(strcmp(data[0],"or")==0){
 		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100101");	
@@ -566,6 +587,7 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	else if(strcmp(data[0],"ori")==0){
 	
 	}
+	// takes negative values
 	else if(strcmp(data[0],"sltiu")==0){
 	
 	}
@@ -579,8 +601,16 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 		
 		Binary = makeRType("000000",atoi(data[1]),0,atoi(data[2]),atoi(data[3]),"000010");
 	}
+	// takes negative values
 	else if(strcmp(data[0],"sw")==0){
-	
+		char *imme;
+		if (strlen(data[2]) > 3 && data[2][1] == 'x') {
+			imme = hextoBin(data[2], 16);
+		}
+		else {
+			imme = decitobin(atoi(data[2]), 16);
+		}
+		Binary = makeIType("101011", atoi(data[1]), atoi(data[3]), imme);
 	}
 	else if(strcmp(data[0],"subu")==0){
 		
