@@ -26,6 +26,8 @@ int main(int argc, char* argv[]){
 	char *lineToBinary(char *line[4]);
 	char *data_addr(char *data_list[10], const char *data, int high);
 	char *hextoBin(char *number, int length);
+	char *decitobin(int number, int length);
+	
 	
 	file = fopen(argv[1],"r");
 	if(file){
@@ -176,21 +178,94 @@ int main(int argc, char* argv[]){
 	printf("num_data is: %d\n", num_data);
 	printf("num_text is: %d\n", num_text);
 
-	printf("%zu\n", strlen(data_name[0]));
-
-	printf("%s\n", hextoBin("0x3c8", 16));
-
-	u binint[] = "00001111";
-	binint = ~binint;
-	printf("%s\n", binint);
+	printf("%s\n", decitobin(17, 10));
+	printf("%s\n", decitobin(-9, 5));
 
 	return 0;
+}
+
+char *decitobin(int deci, int length) {
+	char *binary_str = (char *)malloc(length);
+	int binary = 0;
+	int counter = 1;
+	int negative = 0;
+	int bin_length = 0;
+	int remainer;
+	int i;
+	
+	if (deci < 0) {
+		negative = 1;
+		deci = -deci;
+	}
+	while (deci!=0) {
+		bin_length++;
+		binary = binary + counter*(deci%2);
+		deci = deci/2;
+		counter = counter*10;
+	}
+	
+	if (negative == 0) {
+		for (i = 0; i < length - bin_length; i++) {
+			binary_str[i] = '0';
+		}
+		for (i = length - 1; i > length - bin_length - 1; i--) {
+			if (binary%10 == 1) {
+				binary_str[i] = '1';
+			}
+			else {
+				binary_str[i] = '0';
+			}
+			binary = binary/10;
+		}
+	}
+	else {
+		int init_length = bin_length + 2;
+		char *init_value = (char *)malloc(init_length);
+		init_value[0] = '0';
+		init_value[1] = '1';
+		for (i = init_length - 1; i > 1; i--) {
+			if (binary%10 == 1) {
+				init_value[i] = '0';
+			}
+			else {
+				init_value[i] = '1';
+			}
+			binary = binary/10;
+		}
+		int overflow = 1;
+		for (i = init_length - 1; i > -1; i--) {
+			if (init_value[i] == '1' && overflow == 1) {
+				init_value[i] = '0';
+				overflow = 1;
+			}
+			else {
+				if (init_value[i] == '0' && overflow == 0) {
+					init_value[i] = '0';
+					overflow = 0;
+				}
+				else {
+					init_value[i] = '1';
+					overflow = 0;
+				}
+			}
+		}
+		init_value[0] = '1';
+		printf("%s\n", init_value);
+		for (i = 0; i < length - (bin_length + 2); i++) {
+			binary_str[i] = '1';
+		}
+		for (i = 0; i < bin_length + 2; i++) {
+			binary_str[length - (bin_length + 2)] = init_value[i];
+		}
+	}
+	return binary_str;
 }
 
 // Decimal to binary number
 int deciTobin(int deci) {
 	int binary = 0;
 	int counter = 1;
+	int negative;
 	int remainder;
 	while (deci!=0) {
 		remainder = deci%2;
