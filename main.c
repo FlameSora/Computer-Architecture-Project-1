@@ -51,7 +51,6 @@ int main(int argc, char* argv[]){
 	printf("name is out while: %s\n", name_output);
 	
 	f = fopen(name_output,"w");
-	fprintf(f,"testing");
 	if(file){
 		while((read = getline(&line, &len,file))!=-1){
 			if(!strcmp(line, "\t.data\n")){
@@ -79,6 +78,7 @@ int main(int argc, char* argv[]){
 						data_value[dataidx] = (char *)malloc(32);
 						strcpy(data_value[dataidx],pch);
 						dataidx++;
+						pch = strtok(NULL, "\n\t ,$:");
 					}
 					else {
 						pch = strtok(NULL,"\n\t ,$:");
@@ -99,9 +99,7 @@ int main(int argc, char* argv[]){
 				else {
 					if (!strcmp(name, "la")) {
 						pch = strtok(NULL, "\n\t ,$:");
-						printf("pch is :%s\n", pch);
 						if (strcmp(data_addr(data_name, pch, 0), "0000000000000000") != 0) {
-							printf("I got in\n");
 							rel_addr++;
 							num_text++;
 						}
@@ -113,6 +111,8 @@ int main(int argc, char* argv[]){
 		}	
 		fclose(file);
 	}
+	fprintf(f, "%s",decitobin(num_text*4,32));
+	fprintf(f, "%s",decitobin(num_data*4,32));
 	file = fopen(argv[1], "r");
 	rel_addr = 0;
 	if (file) {
@@ -122,10 +122,10 @@ int main(int argc, char* argv[]){
 				int input_idx = 0;
 				char *name;
 				
-				printf("Current line is: %s\n", line);
-				printf("Address is: %d\n", rel_addr);
+				printf("Current line: %s", line);
+				printf("Current location: %d\n", rel_addr);
 				pch = strtok(line, "\n\t ,$:");
-				printf("%s\n", pch);
+				name = pch;
 				input[input_idx] = (char *)malloc(32);
 				strcpy(input[input_idx], pch);
 				input_idx++;
@@ -133,81 +133,62 @@ int main(int argc, char* argv[]){
 				
 				if (pch != NULL) {
 					while(pch != NULL) {
-						printf("%s\n", pch);
-						if (input_idx == 2) {
-							name = pch;
-						}
 						input[input_idx] = (char *)malloc(32);
 						strcpy(input[input_idx], pch);
 						input_idx++;
 						pch = strtok(NULL, "\n\t ,$():");
 					}
-					if (!strcmp(input[0], "la")) {
-						char *new_input[4];
-						int i;
-							
-						for (i = 0; i<4; i++) {
-							new_input[i] = (char *)malloc(32);
-						}
-						
-						if (strcmp(data_addr(data_name, name, 0), "0000000000000000") != 0) {
-							strcpy(new_input[0], "lui");
-							strcpy(new_input[1], input[1]);
-							strcpy(new_input[2], data_addr(data_name, input[2], 1));
-							lineToBinary(new_input,data_name,data_value,proc_name,proc_token, rel_addr);
-							
-							strcpy(new_input[0], "ori");
-							strcpy(new_input[1], input[1]);
-							strcpy(new_input[2], input[1]);
-							strcpy(new_input[3], data_addr(data_name, input[2], 0));
-							
+					
+					if (!strcmp(name, "la")) {
+						if (strcmp(data_addr(data_name, input[2], 0), "0000000000000000") != 0) {
 							rel_addr++;
-							lineToBinary(new_input,data_name,data_value,proc_name,proc_token, rel_addr);
+		
+							output =lineToBinary(input,data_name,data_value,proc_name,proc_token,rel_addr);
+							fprintf(f,"%s",output);
 						}
 						else {
-							strcpy(new_input[0], "lui");
-							strcpy(new_input[1], input[1]);
-							strcpy(new_input[2], data_addr(data_name, input[2], 1));
-							lineToBinary(new_input,data_name,data_value,proc_name,proc_token, rel_addr);
+								
+							output = lineToBinary(input,data_name,data_value,proc_name,proc_token, rel_addr);
+							fprintf(f,"%s",output);
 						}
 					}
 					else {
-						lineToBinary(input,data_name,data_value,proc_name,proc_token, rel_addr);
+						output = lineToBinary(input, data_name, data_value, proc_name, proc_token, rel_addr);
+						fprintf(f,"%s",output);
 					}
-				rel_addr++;
+					rel_addr++;
 				}
 			}
 			if (!strcmp(line, "\t.text\n")) {
 				checker = 1;
 			}
 		}
+		fclose(file);
 	}
+
 	int idx = 0;
 	while (idx < dataidx) {
-		if (strcmp(data_name[idx], "Empty")) { 
-			printf("%s is at: ", data_name[idx]);
-			printf("%s\n", data_addr(data_name, data_name[idx], 1));
-			printf("%s\n", data_addr(data_name, data_name[idx], 0));
+		if (strlen(data_value[idx]) > 3 && data_value[idx][1] == 'x') {
+			fprintf(f, "%s", hextoBin(data_value[idx], 32));
+			printf("%s\n", hextoBin(data_value[idx], 32));
 		}
-		printf("%s\n", data_value[idx]);
+		else {
+			fprintf(f, "%s", decitobin(atoi(data_value[idx]), 32));
+			printf("%s\n", decitobin(atoi(data_value[idx]), 32));
+		}
 		idx++;
 	}
-	int idx1 = 0;
-	while (idx1 < proc_idx) {
-		printf("Relative address of %s is:", proc_name[idx1]);
-		printf("%d\n", proc_token[idx1]);
-		idx1++;
-	}
-	printf("num_data is: %d\n", num_data);
-	printf("num_text is: %d\n", num_text);
 
+	printf("%s\n", hextoBin("0x1111", 16));
+	
+	fclose(f);
 	return 0;
 }
 
 char *decitobin(int deci, int length) {
 	char *binary_str = (char *)malloc(length);
 	long long binary = 0;
-	long long  counter = 1;
+	long long counter = 1;
 	int negative = 0;
 	int bin_length = 0;
 	int remainer;
@@ -223,6 +204,7 @@ char *decitobin(int deci, int length) {
 		deci = deci/2;
 		counter = counter*10;
 	}
+
 	
 	if (negative == 0) {
 		for (i = 0; i < length - bin_length; i++) {
@@ -289,6 +271,7 @@ int deciTobin(int deci) {
 	int remainder;
 	while (deci!=0) {
 		remainder = deci%2;
+
 		deci = deci/2;
 		binary = binary + (remainder*counter);
 		counter = counter*10;
@@ -312,11 +295,13 @@ char *data_addr(char *data_name[10], const char *data, int high) {
 	int length;
 	int i;
 	
-	addr[0] = '1';
-	for (i=1; i<32; i++) {
+	for (i = 0; i<3; i++) {
 		addr[i] = '0';
 	}
-
+	addr[3] = '1';
+	for (i=4; i<32; i++) {
+		addr[i] = '0';
+	}
 	while (strcmp(data_name[idx], data)) {
 		idx++;
 	}
@@ -325,9 +310,18 @@ char *data_addr(char *data_name[10], const char *data, int high) {
 	idx = deciTobin(idx);
 	length = biLengthCal(idx);
 
-	char added[length];
-	
-	sprintf(added, "%d", idx);
+	char *added = (char *)malloc(length);
+
+	for (i = 0; i<length; i++) {
+		if (idx%10 == 1) {
+			added[length-1-i] = '1';
+		}
+
+		else {
+			added[length-1-i] = '0';
+		}
+		idx = idx/10;
+	}
 
 	for (i = 0; i<length; i++) {
 		addr[32-length+i] = added[i];
@@ -343,26 +337,27 @@ char *data_addr(char *data_name[10], const char *data, int high) {
 			target[i] = addr[i+16];
 		}
 	}
-
 	return target;
 }
 
 
 char * hextoBin(char* hex, int length){
-	char *Binary = (char *)malloc(length);
+	char *Binary = malloc(length);
 	int i = strlen(hex);
 	int j = 2;
-	int k;
-	const char binary[16][5] = {"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
-				    "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
-	const char *digits = "0123456789abcdef";
+	int k = 0;
 
-	for (k = 0; k < length - 4*(i - 2); k++) {
-		Binary[k] = '0';
-	}
+	char binary[16][5] = {"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
+				    "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
+	char *digits = "0123456789abcdef";
 	
+	while (k <length - 4*(i-2) ) {
+		Binary[k] = '0';
+		k++;
+	}
+
 	while (hex[j]) {
-		const char *v = strchr(digits, hex[j++]);
+		char *v = strchr(digits, hex[j++]);
 		if (v) {
 			strcat(Binary, binary[v-digits]);
 		}
@@ -477,7 +472,7 @@ char * makeJType(char *op, char *jTarget){
 		
 char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* proc_name[10],int proc_token[10],int rel_addr ){
 	
-	char *Binary=malloc(32);
+	char *Binary=malloc(64);
 	int j;
 	for(j =0;j<32;j++){
 		Binary[j] = '0';
@@ -495,6 +490,7 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	int i;
 	char *hextoBin(char *hex, int length);
 	char *decitobin(int deci, int length);
+	char *data_addr(char *data_name[10], const char *data, int high);
 	int deciTobin(int deci);
 	int length; 
 	int counter = 0;
@@ -503,18 +499,17 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 
 	// takes negative numbers
 	if(strcmp(data[0],"addiu")==0){
-		printf("what is o: %c\n",data[3][0]);
 		if(strlen(data[3])>2 & data[3][1] =='x'){
 			imm = hextoBin(data[3],16);	
-			Binary = makeIType("001001",atoi(data[2]),atoi(data[1]), imm);
+			Binary = makeIType("001001",atoi(data[1]),atoi(data[2]), imm);
 		}
 		else{
 			imm = decitobin(atoi(data[3]),16);	
-			Binary = makeIType("001001",atoi(data[2]),atoi(data[1]),imm);
+			Binary = makeIType("001001",atoi(data[1]),atoi(data[2]),imm);
 		}	
 	}
 	else if(strcmp(data[0],"addu")==0){
-		Binary = makeRType("000000", atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100000");
+		Binary = makeRType("000000", atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100001");
 	}
 	
 	else if(strcmp(data[0],"and")==0){
@@ -526,11 +521,11 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	
 		if(strlen(data[3])>2 & data[3][1] =='x'){
 			imm = hextoBin(data[3],16);	
-			Binary = makeIType("001100",atoi(data[2]),atoi(data[1]), imm);
+			Binary = makeIType("001100",atoi(data[1]),atoi(data[2]), imm);
 		}
 		else{
 			imm = decitobin(atoi(data[3]),16);	
-			Binary = makeIType("001101",atoi(data[2]),atoi(data[1]),imm);
+			Binary = makeIType("001101",atoi(data[1]),atoi(data[2]),imm);
 		}	
 	}
 	// takes negative values
@@ -593,10 +588,31 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	}
 	else if(strcmp(data[0],"jr")==0){
 		Binary = makeRType("000000",0,atoi(data[1]),0,0,"001000");		
-	}
+	}	
 	else if(strcmp(data[0],"lui")==0){
-	
+		char *imme;
+		if (strlen(data[2]) > 3 && data[2][1] == 'x') {
+			imme = hextoBin(data[2], 16);
+		}
+		else {
+			imme = decitobin(atoi(data[2]), 16);
+		}
+		Binary = makeIType("001111", atoi(data[1]), 0, imme);
 	}
+	else if(strcmp(data[0], "la") == 0) {
+		char *upper_addr = (char*)malloc(16);
+		upper_addr = data_addr(data_name, data[2], 1);
+		printf("%s\n", upper_addr);
+		char *lower_addr = (char*)malloc(16);
+		lower_addr = data_addr(data_name, data[2], 0);
+		printf("%s\n", lower_addr);
+
+		Binary = makeIType("001111", atoi(data[1]), 0, upper_addr);
+		
+		if (strcmp(lower_addr, "0000000000000000") != 0) {
+			strcat(Binary, makeIType("001101", atoi(data[1]), atoi(data[1]), lower_addr));
+		}
+	}	
 	// takes negative values
 	else if(strcmp(data[0],"lw")==0){
 		char *imme;
@@ -608,9 +624,6 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 		}
 		Binary = makeIType("100011", atoi(data[1]), atoi(data[3]), imme);
 	}
-	else if(strcmp(data[0],"la")==0){
-	
-	}
 	else if(strcmp(data[0],"nor")==0){
 		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100111");	
 	}
@@ -618,14 +631,28 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100101");	
 	}
 	else if(strcmp(data[0],"ori")==0){
-	
+		char *imme;
+		if (strlen(data[3]) > 3 && data[3][1] == 'x') {
+			imme = hextoBin(data[3], 16);
+		}
+		else {
+			imme = decitobin(atoi(data[3]), 16);
+		}
+		Binary = makeIType("001101", atoi(data[1]), atoi(data[2]), imme);
 	}
 	// takes negative values
 	else if(strcmp(data[0],"sltiu")==0){
-	
+		char *imme;
+		if (strlen(data[3]) > 3 && data[3][1] == 'x') {
+			imme = hextoBin(data[3], 16);
+		}
+		else {
+			imme = decitobin(atoi(data[3]), 16);
+		}
+		Binary = makeIType("001011", atoi(data[1]), atoi(data[2]), imme);
 	}
 	else if(strcmp(data[0],"sltu")==0){
-	
+		Binary = makeRType("000000", atoi(data[1]), atoi(data[2]), atoi(data[3]), 0, "101011");
 	}
 	else if(strcmp(data[0],"sll")==0){
 		Binary = makeRType("000000",atoi(data[1]),0,atoi(data[2]),atoi(data[3]),"000000");
