@@ -20,15 +20,38 @@ int main(int argc, char* argv[]){
 	int num_text=0;
 	int checker=-2;
 	char *output;
-
+	FILE *f;
+	char* name_output;
+	char* temp_name;
+	char* temp2_name;
 	// functions
 	char *lineToBinary(char *line[4],char* data_name[10], char*data_value[10], char *proc_name[10], int proc_token[10], int rel_addr);
 	char *data_addr(char *data_list[10], const char *data, int high);
 	char *hextoBin(char *number, int length);
 	char *decitobin(int number, int length);
-	
-	
+	name_output = malloc(100);
+	temp_name = malloc(100);
+	temp2_name = malloc(100);
+//	f = fopen(argv[1]
 	file = fopen(argv[1],"r");
+	name_output = strcpy( name_output,argv[1]);
+	temp2_name = strcpy(temp_name, name_output);
+	temp2_name = strtok(temp_name, "/ .");
+	temp_name = strcpy(temp_name, temp2_name);
+	temp_name = strtok(NULL," /.");
+//	
+	printf("temp name is: %s\n",temp_name);
+	while(temp_name!=NULL){
+		
+		name_output = strcpy(name_output,temp2_name);
+		temp2_name = strcpy(temp2_name, temp_name);
+		temp_name  =strtok (NULL,"/ .");
+	}
+	strcat(name_output,".o");
+	printf("name is out while: %s\n", name_output);
+	
+	f = fopen(name_output,"w");
+	fprintf(f,"testing");
 	if(file){
 		while((read = getline(&line, &len,file))!=-1){
 			if(!strcmp(line, "\t.data\n")){
@@ -183,8 +206,8 @@ int main(int argc, char* argv[]){
 
 char *decitobin(int deci, int length) {
 	char *binary_str = (char *)malloc(length);
-	int binary = 0;
-	int counter = 1;
+	long long binary = 0;
+	long long  counter = 1;
 	int negative = 0;
 	int bin_length = 0;
 	int remainer;
@@ -260,7 +283,7 @@ char *decitobin(int deci, int length) {
 
 // Decimal to binary number
 int deciTobin(int deci) {
-	int binary = 0;
+	int  binary = 0;
 	int counter = 1;
 	int negative;
 	int remainder;
@@ -476,17 +499,19 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	int length; 
 	int counter = 0;
 	int target;
+	char* imm;
 
 	// takes negative numbers
 	if(strcmp(data[0],"addiu")==0){
 		printf("what is o: %c\n",data[3][0]);
-//		if(strlen(data[3])>2 & data[3][1] =='x'){
-//			char str[strlen(data[3]-2)];
-//			strncpy(str, data[3]+2,strlen(data[3])-2);
-//			printf("str is %s\n", str);
-//		}	
-	//	Binary = makeIType("001001",atoi(data[2]),atoi(data[1]),);
-		
+		if(strlen(data[3])>2 & data[3][1] =='x'){
+			imm = hextoBin(data[3],16);	
+			Binary = makeIType("001001",atoi(data[2]),atoi(data[1]), imm);
+		}
+		else{
+			imm = decitobin(atoi(data[3]),16);	
+			Binary = makeIType("001001",atoi(data[2]),atoi(data[1]),imm);
+		}	
 	}
 	else if(strcmp(data[0],"addu")==0){
 		Binary = makeRType("000000", atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100000");
@@ -499,6 +524,14 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	}
 	else if(strcmp(data[0],"andi")==0){
 	
+		if(strlen(data[3])>2 & data[3][1] =='x'){
+			imm = hextoBin(data[3],16);	
+			Binary = makeIType("001100",atoi(data[2]),atoi(data[1]), imm);
+		}
+		else{
+			imm = decitobin(atoi(data[3]),16);	
+			Binary = makeIType("001101",atoi(data[2]),atoi(data[1]),imm);
+		}	
 	}
 	// takes negative values
 	else if(strcmp(data[0],"beq")==0){
