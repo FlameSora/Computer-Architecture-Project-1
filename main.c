@@ -167,19 +167,20 @@ int main(int argc, char* argv[]){
 	}
 
 	int idx = 0;
+//	printf("1\n");
 	while (idx < dataidx) {
 		if (strlen(data_value[idx]) > 3 && data_value[idx][1] == 'x') {
 			fprintf(f, "%s", hextoBin(data_value[idx], 32));
-			printf("%s\n", hextoBin(data_value[idx], 32));
+			printf("in hex %s\n", hextoBin(data_value[idx], 32));
 		}
 		else {
 			fprintf(f, "%s", decitobin(atoi(data_value[idx]), 32));
-			printf("%s\n", decitobin(atoi(data_value[idx]), 32));
+			printf("in deci %s\n", decitobin(atoi(data_value[idx]), 32));
 		}
 		idx++;
 	}
-
-	printf("%s\n", hextoBin("0x1111", 16));
+//	printf("2\n");
+	printf("%s\n", hextoBin("0x12345678", 32));
 	
 	fclose(f);
 	return 0;
@@ -343,25 +344,44 @@ char *data_addr(char *data_name[10], const char *data, int high) {
 
 char * hextoBin(char* hex, int length){
 	char *Binary = malloc(length);
+	int temp = 0;
+	for(temp =0;temp<length;temp++){
+		Binary[temp] = '0';
+	}
 	int i = strlen(hex);
 	int j = 2;
 	int k = 0;
+	int index =0;
+	int temp2=0;
+	int counter =0;
 
-	char binary[16][5] = {"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
+	const char binary[16][5] = {"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
 				    "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
-	char *digits = "0123456789abcdef";
+	const char *digits = "0123456789abcdef";
 	
-	while (k <length - 4*(i-2) ) {
-		Binary[k] = '0';
-		k++;
-	}
-
-	while (hex[j]) {
-		char *v = strchr(digits, hex[j++]);
-		if (v) {
-			strcat(Binary, binary[v-digits]);
+//	while (k <length - 4*(i-2) ) {
+//		Binary[k] = '0';
+//		k++;
+//	}
+	for(temp = 0; temp<i-2;temp++){
+		for(temp2=0;temp2<16;temp2++){
+			if(hex[temp+2] == digits[temp2]){
+				index =temp2;
+				break;
+			}
 		}
+		for(temp2=0; temp2<4;temp2++){
+			Binary[length -(i-2)*4 +temp2+counter*4] = binary[index][temp2];
+			
+		}
+		counter ++;
 	}
+//	while (hex[j]) {
+//		const char *v = strchr(digits, hex[j++]);
+//		if (v) {
+//			strcat(Binary, binary[v-digits]);
+//		}
+//	}
 	return Binary;		
 }
 
@@ -525,7 +545,7 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 		}
 		else{
 			imm = decitobin(atoi(data[3]),16);	
-			Binary = makeIType("001101",atoi(data[1]),atoi(data[2]),imm);
+			Binary = makeIType("001100",atoi(data[1]),atoi(data[2]),imm);
 		}	
 	}
 	// takes negative values
