@@ -32,15 +32,14 @@ int main(int argc, char* argv[]){
 	name_output = malloc(100);
 	temp_name = malloc(100);
 	temp2_name = malloc(100);
-//	f = fopen(argv[1]
+
 	file = fopen(argv[1],"r");
 	name_output = strcpy( name_output,argv[1]);
 	temp2_name = strcpy(temp_name, name_output);
 	temp2_name = strtok(temp_name, "/ .");
 	temp_name = strcpy(temp_name, temp2_name);
 	temp_name = strtok(NULL," /.");
-//	
-	printf("temp name is: %s\n",temp_name);
+	
 	while(temp_name!=NULL){
 		
 		name_output = strcpy(name_output,temp2_name);
@@ -48,7 +47,6 @@ int main(int argc, char* argv[]){
 		temp_name  =strtok (NULL,"/ .");
 	}
 	strcat(name_output,".o");
-	printf("name is out while: %s\n", name_output);
 	
 	f = fopen(name_output,"w");
 	if(file){
@@ -122,8 +120,6 @@ int main(int argc, char* argv[]){
 				int input_idx = 0;
 				char *name;
 				
-				printf("Current line: %s", line);
-				printf("Current location: %d\n", rel_addr);
 				pch = strtok(line, "\n\t ,$:");
 				name = pch;
 				input[input_idx] = (char *)malloc(32);
@@ -165,22 +161,6 @@ int main(int argc, char* argv[]){
 		}
 		fclose(file);
 	}
-
-	int idx = 0;
-//	printf("1\n");
-	while (idx < dataidx) {
-		if (strlen(data_value[idx]) > 3 && data_value[idx][1] == 'x') {
-			fprintf(f, "%s", hextoBin(data_value[idx], 32));
-			printf("in hex %s\n", hextoBin(data_value[idx], 32));
-		}
-		else {
-			fprintf(f, "%s", decitobin(atoi(data_value[idx]), 32));
-			printf("in deci %s\n", decitobin(atoi(data_value[idx]), 32));
-		}
-		idx++;
-	}
-//	printf("2\n");
-	printf("%s\n", hextoBin("0x12345678", 32));
 	
 	fclose(f);
 	return 0;
@@ -253,7 +233,6 @@ char *decitobin(int deci, int length) {
 			}
 		}
 		init_value[0] = '1';
-		printf("%s\n", init_value);
 		for (i = 0; i < length - init_length; i++) {
 			binary_str[i] = '1';
 		}
@@ -359,10 +338,7 @@ char * hextoBin(char* hex, int length){
 				    "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
 	const char *digits = "0123456789abcdef";
 	
-//	while (k <length - 4*(i-2) ) {
-//		Binary[k] = '0';
-//		k++;
-//	}
+
 	for(temp = 0; temp<i-2;temp++){
 		for(temp2=0;temp2<16;temp2++){
 			if(hex[temp+2] == digits[temp2]){
@@ -376,12 +352,6 @@ char * hextoBin(char* hex, int length){
 		}
 		counter ++;
 	}
-//	while (hex[j]) {
-//		const char *v = strchr(digits, hex[j++]);
-//		if (v) {
-//			strcat(Binary, binary[v-digits]);
-//		}
-//	}
 	return Binary;		
 }
 
@@ -390,6 +360,7 @@ char * hextoBin(char* hex, int length){
 char * makeRType(char *op, int rd, int rs, int rt,int shamt, char* hex){
 		char *Binary = malloc(32);
 		int deciTobin(int deci);
+		char *decitobin(int deci, int length);
 		int length;
 		char str[5];
 		int i;
@@ -402,7 +373,6 @@ char * makeRType(char *op, int rd, int rs, int rt,int shamt, char* hex){
 		}
 		for(i=6;i<11;i++){
 			sprintf(str, "%d",deciTobin(rs));
-			printf("str is: %s\n",str);
 			length = biLengthCal(deciTobin(rs));
 			if((10 - i - (5 - length))>=0){
 				Binary[i+(5-length)] = str[i-6]; 
@@ -410,10 +380,8 @@ char * makeRType(char *op, int rd, int rs, int rt,int shamt, char* hex){
 		}
 		for(i=11;i<16;i++){
 			sprintf(str,"%d",deciTobin(rt));
-			printf("str is: %s\n",str);
 			length = biLengthCal(deciTobin(rt));
 			if((15-i-(5-length))>=0){
-				printf("%d, in loop\n",length);
 				Binary[i+(5-length)] = str[i-11];
 			}
 		}
@@ -453,7 +421,6 @@ char * makeIType(char *op, int rt, int rs, char * imm){
 		}
 		for(i=6;i<11;i++){
 			sprintf(str, "%d",deciTobin(rs));
-			printf("str is: %s\n",str);
 			length = biLengthCal(deciTobin(rs));
 			if((10 - i - (5 - length))>=0){
 				Binary[i+(5-length)] = str[i-6]; 
@@ -622,10 +589,8 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 	else if(strcmp(data[0], "la") == 0) {
 		char *upper_addr = (char*)malloc(16);
 		upper_addr = data_addr(data_name, data[2], 1);
-		printf("%s\n", upper_addr);
 		char *lower_addr = (char*)malloc(16);
 		lower_addr = data_addr(data_name, data[2], 0);
-		printf("%s\n", lower_addr);
 
 		Binary = makeIType("001111", atoi(data[1]), 0, upper_addr);
 		
@@ -696,7 +661,6 @@ char * lineToBinary(char *data[4],char* data_name[10],char*data_value[10],char* 
 		
 		Binary = makeRType("000000",atoi(data[1]),atoi(data[2]),atoi(data[3]),0,"100011");
 	}
-	printf("binary is %s\n",Binary);
 	return Binary;
 }
 	
