@@ -161,6 +161,20 @@ int main(int argc, char* argv[]){
 		}
 		fclose(file);
 	}
+
+	int idx = 0;
+//	char *data;
+
+	while (idx < dataidx) {
+		if (strlen(data_value[idx]) > 3 && data_value[idx][1] == 'x') {
+		//	data = hextobin(data_value[idx], 32);
+			fprintf(f, "%s", hextoBin(data_value[idx], 32));
+		}
+		else {
+			fprintf(f, "%s", decitobin(atoi(data_value[idx]), 32));
+		}
+		idx++;
+	}
 	
 	fclose(f);
 	return 0;
